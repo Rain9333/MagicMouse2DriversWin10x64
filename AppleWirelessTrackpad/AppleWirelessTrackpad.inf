@@ -1,0 +1,137 @@
+;*****************************************************************************
+; INF for Apple Wireless Trackpad
+; Copyright © 2010 Apple Inc. All Rights Reserved.
+;*****************************************************************************
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=HIDClass
+ClassGUID={745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Provider=%AAPL%
+DriverPackageDisplayName="Apple Wireless Trackpad"
+DriverPackageType=PlugAndPlay
+DriverVer = 06/21/2018,6.1.7000.0
+
+;*****************************************
+; Catalog files need to be unique names
+;*****************************************
+CatalogFile=applewtp.cat
+
+[DestinationDirs]
+DefaultDestDir = 12
+
+;*****************************************************************************
+; WirelessTrackpad Device Filter Install Section
+;*****************************************************************************
+
+[Manufacturer]
+%MfgName%=Apple, NTamd64
+
+;=============================================================================
+[Apple.NTamd64]
+%AppleWirelessTrackpad.DeviceDesc%=AppleWirelessTrackpad,   BTHENUM\{00001124-0000-1000-8000-00805f9b34fb}_VID&000205ac_PID&030e
+
+;*****************************************************************************************
+; IMPORTANT: New PIDs need to be added to AppleWirelessTrackpad.NT.AddReg section below
+;*****************************************************************************************
+
+
+;*****************************************************************************
+; AppleWirelessTrackpad Filter Section
+;*****************************************************************************
+[AppleWirelessTrackpad.NT]  
+Include=hidbth.inf
+Needs=HIDBTH_Inst.NT
+CopyFiles=AppleWirelessTrackpad.NT.Copy
+AddReg=AppleWirelessTrackpad.NT.AddReg
+
+[AppleWirelessTrackpad.NT.Copy]
+applewtp.sys
+
+[AppleWirelessTrackpad.NT.AddReg]                            
+HKR,%BOOTCAMP_KEY%,"WirelessTrackpad",,"5.0.0.0"
+HKR,%BOOTCAMP_KEY_BTH%,"PID00",0x00010001,0x0000030e
+;****************************************************************
+; New PIDs added here with key names PID00, PID01, PID02, etc.
+; 0x00010001 stands for FLG_ADDREG_TYPE_DWORD
+;****************************************************************
+
+[AppleWirelessTrackpad.NT.HW]
+AddReg = AppleWirelessTrackpad.NT.HW.AddReg
+Include = input.inf
+Needs = HID_Inst.NT.HW
+
+[AppleWirelessTrackpad.NT.HW.AddReg]  
+HKR,,"LowerFilters",0x00010000,"applewtp"
+
+
+;*****************************************************************************
+; AppleWirelessTrackpad Device Filter Service Section
+;*****************************************************************************
+;
+; This will add applewtp as the service and make sure that applewtp.sys has
+; been installed.
+;
+; Do not specify SPSVCINST_ASSOCSERVICE on filter drivers. 
+;
+[AppleWirelessTrackpad.NT.Services]
+Include = hidbth.inf
+Needs	= HIDBTH_Inst.NT.Services
+AddService = applewtp,, AppleWirelessTrackpad_Service_Inst 
+
+[AppleWirelessTrackpad_Service_Inst]
+DisplayName    = %AppleWirelessTrackpad.SvcDesc%                            
+ServiceType    = %SERVICE_KERNEL_DRIVER% 
+StartType      = %SERVICE_DEMAND_START% 
+ErrorControl   = %SERVICE_ERROR_IGNORE% 
+ServiceBinary  = %12%\applewtp.sys                            
+
+
+;*****************************************************************************
+; Source file information
+;*****************************************************************************
+
+[SourceDisksNames]
+1 = %DiskId1%,,,""
+
+[SourceDisksFiles]
+applewtp.sys  = 1,,
+
+
+;*****************************************************************************
+; String Secion
+;*****************************************************************************
+[Strings]
+;
+; Strings or constants that can be localized
+;
+AAPL    = "Apple Inc."
+MfgName = "Apple Inc."
+
+DiskId1                    = "Apple Drivers Disk"
+AppleWirelessTrackpad.DeviceDesc = "Apple Wireless Trackpad"
+AppleWirelessTrackpad.SvcDesc    = "Apple Wireless Trackpad"
+BOOTCAMP_KEY               = "SOFTWARE\Apple Inc.\Boot Camp\Versions"
+BOOTCAMP_KEY_BTH           = "SOFTWARE\Apple Inc.\Boot Camp\AppleWirelessTrackpadPids"
+
+;
+; Strings or constants that can NOT be localized
+;
+SPSVCINST_ASSOCSERVICE = 0x00000002
+SERVICE_BOOT_START     = 0x0 
+SERVICE_SYSTEM_START   = 0x1 
+SERVICE_AUTO_START     = 0x2 
+SERVICE_DEMAND_START   = 0x3 
+SERVICE_DISABLED       = 0x4 
+
+SERVICE_KERNEL_DRIVER  = 0x1 
+SERVICE_ERROR_IGNORE   = 0x0 
+SERVICE_ERROR_NORMAL   = 0x1 
+SERVICE_ERROR_SEVERE   = 0x2 
+SERVICE_ERROR_CRITICAL = 0x3 
+
+REG_EXPAND_SZ          = 0x00020000 
+REG_DWORD              = 0x00010001 
+REG_MULTI_SZ           = 0x00010000
+REG_BINARY             = 0x00000001
+REG_SZ                 = 0x00000000
